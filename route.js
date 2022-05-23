@@ -4,6 +4,8 @@ const { User, validateUser } = require('./userSchema')
 const validateMiddleWare = require('./validateMiddleWare')
 const JProduct = require('./productSchema')
 const bcrypt = require('bcrypt')
+const jwt = require("jsonwebtoken");
+
 
 
 router.get('/router', (req, res) => {
@@ -34,6 +36,9 @@ router.post('/adduser', [validateMiddleWare(validateUser)], async (req, res) => 
             msg: 'successfully added user to the database',
             data: saveUser
         })
+
+        
+
     } catch(error) {
         res.status(400).json({
             success: false,
@@ -154,6 +159,8 @@ router.delete('/removeproduct/:id', async (req, res) => {
 
 // LOGIN
 router.post('/login', async (req, res) => {
+    try{
+
     const {email, password} = req.body
 
     // CHECK IF LOGIN FORM IS EMPTY
@@ -191,6 +198,21 @@ router.post('/login', async (req, res) => {
         }
     })
 
+        const token = jwt.sign({id : users._id, name: users.firstName, email: users.email, password: users.password},process.env.JWT_SECRET_KEY);
+
+        res.status(200).json({
+            success : true,
+            message : "Successful Login",
+            data : users.firstName+ " "+ users.lastName,
+            token :token
+        })
+
+    }catch(errors){
+        res.status(400).json({
+            success : false,
+            message : errors.message
+        })
+    }
 })
 
 module.exports = router
